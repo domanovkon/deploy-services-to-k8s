@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+  annotations:
+    # If the class annotation is not specified it defaults to "gce".
+    kubernetes.io/ingress.class: "gce"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gatewaycloud
+                port:
+                  number: 8080
+          - path: /api/v1/flights
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: flight
+                port:
+                  number: 8081
+          - path: /api/v1/privilege
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: bonus
+                port:
+                  number: 8082
+          - path: /api/v1/tickets
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ticket
+                port:
+                  number: 8083

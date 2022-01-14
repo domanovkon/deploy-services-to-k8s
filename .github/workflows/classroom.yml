@@ -1,0 +1,107 @@
+name: GitHub Classroom Workflow
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Autograding
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build GatewayService
+        run: mvn --batch-mode --update-snapshots verify -f GatewayCloud
+
+      - name: Build TicketService
+        run: mvn --batch-mode --update-snapshots verify -f TicketService
+
+      - name: Build FlightService
+        run: mvn --batch-mode --update-snapshots verify -f FlightService
+
+      - name: Build BonusService
+        run: mvn --batch-mode --update-snapshots verify -f BonusService
+
+      - name: Build & push Gateway image
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: domanovkon/gatewaycloud
+          tags: 2.0
+          registry: docker.io
+          directory: GatewayCloud
+          dockerfile: GatewayCloud/Dockerfile
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & push Flight image
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: domanovkon/flight
+          tags: 1.0
+          registry: docker.io
+          directory: FlightService
+          dockerfile: FlightService/Dockerfile
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & push Ticket image
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: domanovkon/ticket
+          tags: 1.0
+          registry: docker.io
+          directory: TicketService
+          dockerfile: TicketService/Dockerfile
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & push Bonus image
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: domanovkon/bonus
+          tags: 1.0
+          registry: docker.io
+          directory: BonusService
+          dockerfile: BonusService/Dockerfile
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+
+  Deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Deploy to k8s.
+        uses: ameydev/gke-kubectl-action@master
+        env:
+          PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+          APPLICATION_CREDENTIALS: ${{ secrets.GKE_SA_KEY }}
+          CLUSTER_NAME: prod
+          ZONE_NAME: us-central1-c
+        with:
+          args: apply -f gke/
+
+      - name: Sleep for 30s
+        uses: juliangruber/sleep-action@v1
+        with:
+          time: 30s
+
+      - name: Run API Tests
+        id: run-newman
+        uses: anthonyvscode/newman-action@v1
+        with:
+          collection: v1/postman/collection.json
+          environment: v1/postman/environment.json
+          delayRequest: 50
+          reporters: cli
+
+      - uses: education/autograding@v1
+        id: autograder
+        continue-on-error: true

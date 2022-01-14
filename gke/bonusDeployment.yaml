@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bonus
+  labels:
+    app: bonus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bonus
+  template:
+    metadata:
+      labels:
+        app: bonus
+    spec:
+      containers:
+        - name: bonus
+          image: domanovkon/bonus:latest
+          ports:
+            - containerPort: 8082
+          env:
+            - name: DATASOURCE_HOST
+              value: "10.88.8.247"
+            - name: DB_NAME
+              value: "services"
+            - name: DB_USER
+              value: "testadmin"
+            - name: DB_PASSWORD
+              value: "testadmin123"
+            - name: DB_PORT
+              value: "5555"

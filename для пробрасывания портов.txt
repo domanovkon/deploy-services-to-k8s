@@ -1,0 +1,10 @@
+kubectl port-forward --namespace default svc/postgresql-test01 5555:5555 & PGPASSWORD="testadmin123" psql --host 127.0.0
+.1 -U postgres -d postgres -p 5555
+
+
+
+ПЕРЕД ЭТИМ СДЕЛАТЬ КОЛИЧЕСТВО REPLICAS 0
+
+
+
+https://arctype.com/blog/deploy-postgres-kubernetes/#option-2-use-a-helm-chart

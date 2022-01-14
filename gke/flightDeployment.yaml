@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flight
+  labels:
+    app: flight
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flight
+  template:
+    metadata:
+      labels:
+        app: flight
+    spec:
+      containers:
+        - name: flight
+          image: domanovkon/flight:1
+          ports:
+            - containerPort: 8081
+          env:
+            - name: DATASOURCE_HOST
+              value: "10.88.8.247"
+            - name: DB_NAME
+              value: "services"
+            - name: DB_USER
+              value: "testadmin"
+            - name: DB_PASSWORD
+              value: "testadmin123"
+            - name: DB_PORT
+              value: "5555"

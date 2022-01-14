@@ -1,3 +1,3 @@
 # Deploy to Cloud
 
-## Deploying services to Google Kubernetes Engine
+Deploying services to Google Kubernetes Engine
